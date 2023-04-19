@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:id="@+id/select_mode_fragment_layout">
+
+    <Button
+        android:id="@+id/learning_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/learning"/>
+    <Button
+        android:id="@+id/definition_quiz_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/definition_quiz"
+        android:layout_margin="@dimen/select_mode_quiz_button_layout_margin" />
+    <Button
+        android:id="@+id/synonym_quiz_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/synonym_quiz"
+        android:layout_margin="@dimen/select_mode_quiz_button_layout_margin" />
+</LinearLayout>

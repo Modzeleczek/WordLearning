@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/statistics_menu_item"
+        android:icon="@drawable/ic_stats_24"
+        android:title="@string/statistics"
+        app:showAsAction="ifRoom" />
+
+    <item android:id="@+id/download_new_words_menu_item"
+        android:title="@string/download_new_words"
+        app:showAsAction="never" />
+</menu>

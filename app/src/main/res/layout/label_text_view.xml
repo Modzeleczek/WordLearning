@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/word_details_label_margin_top"
+    android:padding="@dimen/word_details_label_padding"
+    android:background="@drawable/text_view_style"
+    android:textSize="@dimen/word_details_label_text_size"
+    android:textColor="@color/text" />
