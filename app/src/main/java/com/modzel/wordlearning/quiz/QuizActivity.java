@@ -42,11 +42,12 @@ public abstract class QuizActivity extends ResultingActivity {
                 findViewById(R.id.quiz_answer_button_3)
         };
         setupButtons();
-        if (savedInstanceState != null) { // wracamy po obróceniu ekranu
+        // We come back after rotating the screen.
+        if (savedInstanceState != null) {
             setupFrom(savedInstanceState);
             return;
         }
-        // przychodzimy z głównego menu
+        // We come from the main menu.
         setupNewAsync();
     }
 

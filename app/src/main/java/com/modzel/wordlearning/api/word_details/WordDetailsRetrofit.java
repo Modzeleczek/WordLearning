@@ -25,7 +25,8 @@ public class WordDetailsRetrofit extends CommonRetrofit {
         LinkedList<Word> list = new LinkedList<>();
         for (String word : words) {
             Word detailedWord = getFirstHomonym(service, word);
-            if (detailedWord != null) // udało się pobrać przynajmniej 1 odpowiedni homonim słowa
+            // We managed to download at least 1 eligible homonym of the word.
+            if (detailedWord != null)
                 list.addLast(detailedWord);
         }
         return list;
@@ -33,34 +34,42 @@ public class WordDetailsRetrofit extends CommonRetrofit {
 
     public static Word getFirstHomonym(WordDetailsService service, String word) throws IOException {
         Call<List<Word>> apiCall = service.getHomonyms(word);
-        List<Word> homonyms = apiCall.execute().body(); // dla jednego stringa, np. "bear", API może
-        // zwrócić kilka słów (homonimów); jeżeli nie udało się pobrać słowa, to execute wyrzuca IOException
+        /* For one string, e.g. 'bear', API can return multiple words
+        (homonyms). If could not download the word, execute throws
+        IOException. */
+        List<Word> homonyms = apiCall.execute().body();
         return isWordEligible(homonyms) ? homonyms.get(0) : null;
     }
 
     private static boolean isWordEligible(List<Word> homonyms) {
-        if (homonyms == null || homonyms.size() < 1) // słowo nie zostało pobrane lub nie istnieje
-            // żaden jego homonim w słowniku
+        // Word was not downloaded or no its homonym exists in the dictionary.
+        if (homonyms == null || homonyms.size() < 1)
             return false;
-        Word dw = homonyms.get(0); // bierzemy tylko pierwszy homonim z możliwych kilku
-        if (isNullOrEmpty(dw.getWord())) // faktyczne słowo
+        // Take only the first homonym from multiple possible ones.
+        Word dw = homonyms.get(0);
+        if (isNullOrEmpty(dw.getWord())) // Actual word
             return false;
         List<Meaning> meanings = dw.getMeanings();
-        if (meanings == null || meanings.size() < 1) // słowo nie ma żadnych znaczeń w słowniku
+        // Word has no meanings in the dictionary.
+        if (meanings == null || meanings.size() < 1)
             return false;
-        Meaning m = meanings.get(0); // bierzemy tylko pierwsze znaczenie
-        if (isNullOrEmpty(m.getPartOfSpeech())) // nazwa części mowy
+        Meaning m = meanings.get(0); // Take only the first meaning.
+        if (isNullOrEmpty(m.getPartOfSpeech())) // Part of speech name
             return false;
         List<Definition> definitions = m.getDefinitions();
-        if (definitions == null || definitions.size() < 1) // wybrane pierwsze znaczenie nie ma
-            // żadnych definicji w słowniku
+        /* The selected (first) meaning has no definitions in the
+        dictionary. */
+        if (definitions == null || definitions.size() < 1)
             return false;
-        Definition d = definitions.get(0); // bierzemy tylko pierwszą definicję
-        if (isNullOrEmpty(d.getDefinition())) // faktyczna definicja
+        Definition d = definitions.get(0); // Take only the first definition.
+        if (isNullOrEmpty(d.getDefinition())) // Actual definition
             return false;
-        // d.getExample(); // przykładu wybranej definicji może nie być (wtedy null)
+        /* There may be no example of the the selected definition (null
+        then). */
+        // d.getExample();
         /* List<String> synonyms = d.getSynonyms();
-        if (synonyms == null || synonyms.size() < 1) // słowo może nie mieć synonimów
+        // Word may have no synonyms.
+        if (synonyms == null || synonyms.size() < 1)
             return false; */
         return true;
     }

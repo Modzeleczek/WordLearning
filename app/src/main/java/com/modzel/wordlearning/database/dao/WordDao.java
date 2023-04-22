@@ -14,7 +14,7 @@ import java.util.List;
 @Dao
 public interface WordDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    long insert(Word word); // zwraca klucz główny wstawionego rekordu
+    long insert(Word word); // Returns primary key of the inserted record.
 
     @Query("SELECT * FROM Word WHERE id = :id")
     Word get(long id);

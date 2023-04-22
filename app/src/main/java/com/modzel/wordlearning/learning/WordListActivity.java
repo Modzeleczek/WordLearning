@@ -37,11 +37,15 @@ public class WordListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_word_list);
         // setTitle(R.string.words);
-        if (savedInstanceState != null) // jeżeli aktywność została zniszczona i ponownie jest
-            // tworzona po obróceniu ekranu, to mamy jej stan zapisany w metodzie onSaveInstanceState
+        /* savedInstanceState != null means that the state of the activity was
+        saved in method onSaveInstanceState, then it was destroyed and now is
+        being recreated after screen rotation. */
+        if (savedInstanceState != null)
             searchedQuery = savedInstanceState.getString(KEY_SEARCHED_QUERY);
-        else // jeżeli użytkownik zniszczył aktywność przyciskiem "cofnij" lub jeszcze w niej nie był
-            // to nie mamy zapisanego stanu
+        else /* savedInstanceState == null means that the user destroyed the
+            activity using the back button or he/she has not been in the
+            activity yet so we do not have any previous state of the activity to
+            be restored. */
             searchedQuery = "";
 
         recyclerView = findViewById(R.id.word_list_recycler_view);
@@ -82,8 +86,9 @@ public class WordListActivity extends AppCompatActivity {
             filterWords(searchedQuery);
             searchView.onActionViewCollapsed();
         });
-        if (!searchedQuery.equals("")) { // onCreateOptionsMenu jest wywoływane po onCreate, więc
-            // dopiero tutaj ustawiamy wyszukiwarkę w odczytanym stanie
+        /* onCreateOptionsMenu is called after onCreate so only here put the
+        search bar into read state. */
+        if (!searchedQuery.equals("")) {
             searchView.setQuery(searchedQuery, true);
             searchView.setIconified(false);
         } else
@@ -96,7 +101,7 @@ public class WordListActivity extends AppCompatActivity {
         Executors.newSingleThreadExecutor().execute((Runnable) () -> {
             List<Word> words = repo.getAllWords();
             LinkedList<Word> eligibleWords = new LinkedList<>();
-            for (Word word : words) { // znajdujemy wszystkie słowa zawierające query
+            for (Word word : words) { // Find all words containing query.
                 if (word.getWord().contains(query))
                     eligibleWords.addLast(word);
             }
@@ -113,17 +118,18 @@ public class WordListActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
-    private static final int[] colorMap = { // poziomy nauczenia słowa
-            Color.rgb(255/1, 255/4, 0), // czerwony, jeżeli użytkownik 0 razy z
-            // rzędu dobrze dopasował słowo do jego definicji
-            Color.rgb(255/2, 255/3, 0), // 1 raz
-            Color.rgb(255/3, 255/2, 0), // 2 razy
-            Color.rgb(255/4, 255/1, 0) // 3 razy
+    private static final int[] colorMap = { // Word knowledge levels
+            /* Red if the user correctly matched word definitions 0 times in a
+            row. */
+            Color.rgb(255/1, 255/4, 0),
+            Color.rgb(255/2, 255/3, 0), // 1 time
+            Color.rgb(255/3, 255/2, 0), // 2 times
+            Color.rgb(255/4, 255/1, 0) // 3 times
     };
 
     private class WordHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private final TextView wordTextView;
-        private final View levelIndicatorView; // wskaźnik poziomu nauczenia
+        private final View levelIndicatorView; // Word knowledge indicator
         private Word word;
 
         public WordHolder(LayoutInflater inflater, ViewGroup parent) {
@@ -137,8 +143,8 @@ public class WordListActivity extends AppCompatActivity {
             if (word != null && !isNullOrEmpty(word.getWord())) {
                 this.word = word;
                 wordTextView.setText(word.getWord());
-                int colorIndex = Math.min(word.getGoodAnswers(), colorMap.length - 1); // ograniczamy
-                // colorIndex do colorMap.length - 1
+                // Limit colorIndex to colorMap.length - 1.
+                int colorIndex = Math.min(word.getGoodAnswers(), colorMap.length - 1);
                 levelIndicatorView.setBackgroundColor(colorMap[colorIndex]);
             }
         }

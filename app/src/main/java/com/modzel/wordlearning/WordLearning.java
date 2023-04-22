@@ -15,7 +15,8 @@ import java.util.concurrent.Executors;
 
 public class WordLearning extends Application {
     public static final String CORRECT_DEFINITION_MATCHES = "CORRECT_DEFINITION_MATCHES";
-    public static final String LEARNED_WORDS = "LEARNED_WORDS"; // (ile było słów z przynajmniej 3 prawidłowymi dopasowaniami)
+    // How many were there words with at least 3 correct definiton matches.
+    public static final String LEARNED_WORDS = "LEARNED_WORDS";
     public static final String CORRECT_SYNONYM_MATCHES = "CORRECT_SYNONYM_MATCHES";
     public static final String DOWNLOADED_WORDS = "DOWNLOADED_WORDS";
 
@@ -28,7 +29,7 @@ public class WordLearning extends Application {
 
     private void setupStatistics() {
         Executors.newSingleThreadExecutor().execute(() -> {
-            // dodajemy statystykę do bazy danych, jeżeli jeszcze jej nie ma
+            // If the statistic does not exist in the the database yet, add it.
             Repository repo = new Repository(this);
             // repo.deleteEverything();
             String[] names = { CORRECT_DEFINITION_MATCHES, LEARNED_WORDS, CORRECT_SYNONYM_MATCHES, DOWNLOADED_WORDS };
@@ -52,19 +53,26 @@ public class WordLearning extends Application {
     }
 
     private void setupDailyNotifications() {
-        createNotificationChannel(); // od Androida 8.0 (API 26), aby móc wysyłać powiadomienia, trzeba stworzyć kanał
+        /* Since Android 8.0 (API 26), a channel must be created in order to
+        send notifications. */
+        createNotificationChannel();
         Intent notificationIntent = new Intent(getApplicationContext(), NotificationSender.class);
         notificationIntent.setAction(NotificationSender.DAILY_NOTIFICATION_ACTION);
+        /* Create PendingIntent (for later execution) with some other Intent -
+        notificationIntent which we will set as a repetitive action
+        in AlarmManager. Thanks to that, notificationIntent will be executed
+        every specified time (interval). */
         PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(),
                 NotificationSender.DAILY_NOTIFICATION_ID, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        // tworzymy PendingIntent (do późniejszego wykonania) z innym Intentem - notificationIntentem, który
-        // umieścimy jako powtarzalną akcję w AlarmManagerze, dzięki czemu będzie on wykonywany co określony interwał
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        long start = System.currentTimeMillis(); // czas w milisekundach, od którego mają być mierzone interwały
-        // long interval = AlarmManager.INTERVAL_FIFTEEN_MINUTES; // co ile milisekund broadcast ma być
-        // wysyłany do naszej aplikacji
-        long interval = 30 * 1000; // 30 sekund
+        /* A point in time in milliseconds, from which intervals should be
+        measured. */
+        long start = System.currentTimeMillis();
+        /* Every how many milliseconds a broadcast should be sent to
+        WordLearning application. */
+        long interval = 30 * 1000; // 30 seconds
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, start, interval, pendingIntent);
-        // AlarmManager okresowo wykonuje operację definiowaną przez PendingIntent
+        /* AlarmManager periodically executes the operation defined by
+        PendingIntent. */
     }
 }

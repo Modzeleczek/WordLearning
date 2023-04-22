@@ -10,8 +10,9 @@ public class Word {
     private String word;
     private String partOfSpeech;
     private String definition;
-    private String example; // null jeżeli brak
-    private int goodAnswers; // ile razy użytkownik prawidłowo dopasował to słowo do jego definicji
+    private String example; // Null if the word does not have an example.
+    // How many times the user correctly matched this word's definition.
+    private int goodAnswers;
 
     public Word(String word, String partOfSpeech, String definition, String example) {
         this.word = word;

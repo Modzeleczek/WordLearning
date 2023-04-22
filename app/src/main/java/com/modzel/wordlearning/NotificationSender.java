@@ -24,13 +24,15 @@ public class NotificationSender extends BroadcastReceiver {
     public void onReceive(Context context, Intent receivedIntent) {
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         Intent selectModeStarter = new Intent(context, MainActivity.class);
-        selectModeStarter.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // jeżeli użytkownik ma już otwarte
-        // na wierzchu lub gdzieś pod spodem WordListActivity, to zostanie ono przeniesione na wierzch
+        /* If the user has an open WordListActivity on top or somewhere below,
+        then it will be moved to the top. */
+        selectModeStarter.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        /* Create PendingIntent (for later execution) with some other Intent -
+        selectModeStarter which we will set using a builder in the created
+        notification. Thanks to that, after clicking the notification,
+        selectModeStarter Intent will be executed. */
         PendingIntent pendingIntent = PendingIntent.getActivity(context, DAILY_NOTIFICATION_ID,
-                selectModeStarter, PendingIntent.FLAG_UPDATE_CURRENT); // tworzymy PendingIntent
-        // (do późniejszego wykonania) z innym Intentem - selectModeStarter, który ustawimy builderem
-        // w tworzonym powiadomieniu, dzięki czemu po kliknięciu na powiadomienie zostanie wykonany
-        // Intent selectModeStarter
+                selectModeStarter, PendingIntent.FLAG_UPDATE_CURRENT);
         Executors.newSingleThreadExecutor().execute(() -> {
             Repository repo = new Repository(context);
             String message = null;
@@ -46,11 +48,12 @@ public class NotificationSender extends BroadcastReceiver {
                 if (learned < words.size())
                     message = context.getString(R.string.known_words) +
                             " " + learned + "/" + words.size() + context.getString(R.string.learn_them_all);
-                else // użytkownik nauczył się wszystkich aktualnie pobranych słów
+                // The user learned all words currently stored in the database.
+                else
                     message = context.getString(R.string.you_already_know_all) + " " + learned + " " +
                             context.getString(R.string.available_words_please_download_some_new_ones);
             }
-            // tworzymy powiadomienie w kilku krokach buildera
+            // Create the notification in multiple builder steps.
             NotificationCompat.Builder builder = new NotificationCompat.Builder(context,
                     WORD_LEARNING_CHANNEL_ID)
                     .setContentIntent(pendingIntent)

@@ -50,9 +50,10 @@ public class Repository {
     }
 
     public long insert(Word word) {
-        if (!wordDao.find(word.getWord()).isEmpty()) // słowo już istnieje
+        if (!wordDao.find(word.getWord()).isEmpty()) // Word already exists.
             return -1;
-        return wordDao.insert(word); // wywołujemy synchronicznie, czyli bez databaseWriteExecutorów
+        // Call synchronously so without databaseWriteExecutors.
+        return wordDao.insert(word);
     }
 
     public void update(Word word) {
@@ -67,7 +68,7 @@ public class Repository {
         return wordDao.getWithLessThan(3);
     }
 
-    public int incrementGoodAnswers(long id) { // zwraca nową wartość
+    public int incrementGoodAnswers(long id) { // Returns incremented value.
         if (wordDao.get(id).getGoodAnswers() < 3)
             wordDao.incrementGoodAnswers(id);
         return wordDao.get(id).getGoodAnswers();
@@ -89,13 +90,15 @@ public class Repository {
         return wordSynonymDao.getSynonymsNotFor(wordId);
     }
 
-    public long insertSynonymForWord(long wordId, Synonym synonym) { // zwraca id synonimu
+    // Returns the new synonym's id.
+    public long insertSynonymForWord(long wordId, Synonym synonym) {
         List<Synonym> found = synonymDao.find(synonym.getSynonym());
         long synonymId = -1;
-        if (found.isEmpty()) // jeszcze nie ma tego synonimu
+        if (found.isEmpty()) // Synonym does not exist in the database yet.
             synonymId = synonymDao.insert(synonym);
-        else // już jest
-            synonymId = found.get(0).getId(); // powinien być maksymalnie 1
+        else // Synonym already exists in the database.
+            // At most 1 such synonym should exits.
+            synonymId = found.get(0).getId();
         wordSynonymDao.insert(new WordSynonym(wordId, synonymId));
         return synonymId;
     }

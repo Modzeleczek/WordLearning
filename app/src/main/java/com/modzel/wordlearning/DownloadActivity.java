@@ -33,9 +33,9 @@ public class DownloadActivity extends ResultingActivity {
 
         ProgressBar progressBar = findViewById(R.id.progress_bar);
         progressBar.setProgressTintList(ColorStateList.valueOf(getColor(R.color.progress_bar_color)));
-        /* progressBar.getProgressDrawable().setColorFilter(getColor(R.color.progress_bar_color),
-                PorterDuff.Mode.SRC_IN); pasek w czerwonym filtrem, czyli pusta część paska jest
-                przezroczysta czerwona */
+        /* // Progress bar with red filter so its empty part is transparent red
+        progressBar.getProgressDrawable().setColorFilter(getColor(R.color.progress_bar_color),
+                PorterDuff.Mode.SRC_IN); */
         progressBar.setMin(0);
         progressBar.setMax(DOWNLOADED_WORDS);
         progressBar.setProgress(0);
@@ -73,7 +73,8 @@ public class DownloadActivity extends ResultingActivity {
         @Override
         public void run() { //Background work here
             List<String> words = RandomWordRetrofit.getRandomWords(DOWNLOADED_WORDS);
-            if (words == null) { // błąd podczas pobierania losowych słów
+            // Error occurred while downloading random words.
+            if (words == null) {
                 if (!canceled.get()) finishWithError(R.string.random_words_download_failure);
                 return;
             }
@@ -83,9 +84,12 @@ public class DownloadActivity extends ResultingActivity {
                 if (canceled.get()) return;
                 try {
                     Word detailedWord = WordDetailsRetrofit.getFirstHomonym(service, word);
-                    if (detailedWord != null) // jeżeli słowo nie spełnia warunków aplikacji, to je pomijamy
+                    /* If the word does not satisfy application's conditions,
+                    skip it. */
+                    if (detailedWord != null)
                         detailedWords.addLast(detailedWord);
-                } catch (IOException ignored) {} // jeżeli nie udało się pobrać słowa, to je pomijamy
+                    // If the word could not be downloaded, skip it.
+                } catch (IOException ignored) {}
                 uiHandler.post(() -> progressBar.incrementProgressBy(1)); //UI Thread work here
             }
             // if (detailedWords.size() < DOWNLOADED_WORDS / 4) {
@@ -104,12 +108,16 @@ public class DownloadActivity extends ResultingActivity {
         repo.deleteAllSynonyms();
         repo.deleteAllWords();
         for (Word dw : detailedWords) {
-            String word = dw.getWord(); // zapisujemy faktyczną "wartość" słowa
-            Meaning m = dw.getMeanings().get(0); // bierzemy tylko pierwsze znaczenie
-            String partOfSpeech = m.getPartOfSpeech(); // zapisujemy nazwę części mowy
-            Definition d = m.getDefinitions().get(0); // bierzemy tylko pierwszą definicję
-            String definition = d.getDefinition(); // zapisujemy definicję
-            String example = d.getExample(); // zapisujemy przykład wybranej definicji lub null, jeżeli go nie ma
+            String word = dw.getWord(); // Save the word's content.
+            Meaning m = dw.getMeanings().get(0); // Take only the first meaning.
+            // Save part of speech name.
+            String partOfSpeech = m.getPartOfSpeech();
+            // Take only the first definition.
+            Definition d = m.getDefinitions().get(0);
+            String definition = d.getDefinition(); // Save the definition.
+            /* Save an example of the selected definition or null if no
+            example exists. */
+            String example = d.getExample();
             List<String> synonyms = d.getSynonyms();
             long insertedId = repo.insert(new com.modzel.wordlearning.database.entity.Word(
                     word, partOfSpeech, definition, example));

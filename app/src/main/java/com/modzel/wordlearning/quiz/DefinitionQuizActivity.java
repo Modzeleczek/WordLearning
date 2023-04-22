@@ -69,7 +69,8 @@ public class DefinitionQuizActivity extends QuizActivity {
         }
         Word question = pickNRandomElements(unknownWords, 1, random).get(0);
         List<Word> allWords = repo.getAllWords();
-        if (allWords.size() < 4) { // w bazie danych nie ma nawet 4 słów
+        // The database does not contain even 4 words.
+        if (allWords.size() < 4) {
             finishWithError(R.string.no_words_for_answers);
             return;
         }

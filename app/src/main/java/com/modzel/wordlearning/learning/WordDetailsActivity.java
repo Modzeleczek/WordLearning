@@ -63,13 +63,13 @@ public class WordDetailsActivity extends AppCompatActivity {
                 wordTextView.setText(word.getWord());
                 partOfSpeechTextView.setText(word.getPartOfSpeech());
                 definitionTextView.setText(word.getDefinition());
-                if (word.getExample() != null) // jeżeli słowo ma przykład
+                if (word.getExample() != null) // If the word has an example.
                     exampleTextView.setText(word.getExample());
                 else {
                     exampleLabel.setVisibility(View.GONE);
                     exampleTextView.setVisibility(View.GONE);
                 }
-                if (!synonyms.isEmpty()) // jeżeli słowo ma synonimy
+                if (!synonyms.isEmpty()) // If the word has synonyms.
                     synonymsTextView.setText(joinSynonyms(", ", synonyms));
                 else {
                     synonymsLabel.setVisibility(View.GONE);

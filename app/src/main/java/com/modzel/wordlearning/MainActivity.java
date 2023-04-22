@@ -26,7 +26,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // setTitle(R.string.app_name); // ustawiamy to jako android:label w manifeście
+        // Set this as android:label in manifest.
+        // setTitle(R.string.app_name);
         if (savedInstanceState == null)
             isSelectModeActive = true;
         else
@@ -59,13 +60,15 @@ public class MainActivity extends AppCompatActivity {
                 FragmentTransaction ft = manager.beginTransaction();
                 // https://stackoverflow.com/a/17488542
                 ft.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit);
-                if (isSelectModeActive) // fragment statystyk jest niewidoczny
+                // Statistics fragment is invisible so show it.
+                if (isSelectModeActive)
                     ft.replace(R.id.fragment_frame_layout, statistics);
-                else // jest widoczny
+                else // Statistics fragment is visible so hide it.
                     ft.replace(R.id.fragment_frame_layout, selectMode);
                 isSelectModeActive = !isSelectModeActive;
-                // ft.addToBackStack(null); // nie dodajemy do back stacka, żeby przycisk cofania
-                // nie przywracał poprzedniego fragmentu
+                /* Do not add to back stack so back button does not restore the
+                previous fragment. */
+                // ft.addToBackStack(null);
                 ft.commit();
                 return true;
             case R.id.download_new_words_menu_item:
@@ -93,8 +96,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        /* This method is called when an activity started from MainActivity
+        (this) using startActivityForResult returns a result. */
         super.onActivityResult(requestCode, resultCode, data);
-        if (data == null) // jeżeli nie zakończono Activity z replyIntentem
+        /* If the returning activity is not subclass of ResultingActivity
+        so it does not end with a replyIntent (see
+        ResultingActivity.finishWithMessage). */
+        if (data == null)
             return;
         int messageId = data.getIntExtra(ResultingActivity.EXTRA_MESSAGE_ID, -1);
         Snackbar.make(findViewById(R.id.main_activity_layout), messageId, Snackbar.LENGTH_LONG).show();

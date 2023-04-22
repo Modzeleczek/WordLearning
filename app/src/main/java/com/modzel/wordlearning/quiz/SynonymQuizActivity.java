@@ -70,8 +70,9 @@ public class SynonymQuizActivity extends QuizActivity {
         repo.incrementStatistic(WordLearning.CORRECT_SYNONYM_MATCHES);
     }
 
+    // Do not count incorrect answers.
     @Override
-    protected void noteIncorrectAnswer(Repository repo) {} // nic nie robimy za nieprawidłową odpowiedź
+    protected void noteIncorrectAnswer(Repository repo) {}
 
     protected void setupNew(Handler uiHandler, Repository repo) {
         List<Word> allWordsWithSynonyms = repo.getWordsWithSynonyms();
@@ -83,7 +84,9 @@ public class SynonymQuizActivity extends QuizActivity {
         List<Synonym> questionSynonyms = repo.getSynonymsFor(question.getId());
         Synonym answer = pickNRandomElements(questionSynonyms, 1, random).get(0);
         List<Synonym> notQuestionSynonyms = repo.getSynonymsNotFor(question.getId());
-        if (notQuestionSynonyms.size() < 4) { // w bazie danych nie ma nawet 4 synonimów nienależących do pytania
+        /* The database does not contain even 4 synonyms not belonging to the
+        question. */
+        if (notQuestionSynonyms.size() < 4) {
             finishWithError(R.string.no_synonyms_for_answers);
             return;
         }
