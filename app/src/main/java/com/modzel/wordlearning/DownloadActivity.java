@@ -12,7 +12,6 @@ import com.modzel.wordlearning.api.word_details.Definition;
 import com.modzel.wordlearning.api.word_details.Meaning;
 import com.modzel.wordlearning.api.word_details.Word;
 import com.modzel.wordlearning.api.word_details.WordDetailsRetrofit;
-import com.modzel.wordlearning.api.word_details.WordDetailsService;
 import com.modzel.wordlearning.database.Repository;
 import com.modzel.wordlearning.database.entity.Synonym;
 
@@ -72,18 +71,20 @@ public class DownloadActivity extends ResultingActivity {
 
         @Override
         public void run() { //Background work here
-            List<String> words = RandomWordRetrofit.getRandomWords(DOWNLOADED_WORDS);
+            RandomWordRetrofit randomRF = new RandomWordRetrofit();
+            List<String> words = randomRF.getRandomWords(DOWNLOADED_WORDS);
             // Error occurred while downloading random words.
             if (words == null) {
                 if (!canceled.get()) finishWithError(R.string.random_words_download_failure);
                 return;
             }
-            WordDetailsService service = WordDetailsRetrofit.createService();
+
+            WordDetailsRetrofit detailsRF = new WordDetailsRetrofit();
             LinkedList<Word> detailedWords = new LinkedList<>();
             for (String word : words) {
                 if (canceled.get()) return;
                 try {
-                    Word detailedWord = WordDetailsRetrofit.getFirstHomonym(service, word);
+                    Word detailedWord = detailsRF.getFirstHomonym(word);
                     /* If the word does not satisfy application's conditions,
                     skip it. */
                     if (detailedWord != null)
@@ -92,6 +93,7 @@ public class DownloadActivity extends ResultingActivity {
                 } catch (IOException ignored) {}
                 uiHandler.post(() -> progressBar.incrementProgressBy(1)); //UI Thread work here
             }
+
             // if (detailedWords.size() < DOWNLOADED_WORDS / 4) {
             if (detailedWords.isEmpty()) {
                 if (!canceled.get()) finishWithError(R.string.word_details_download_failure);

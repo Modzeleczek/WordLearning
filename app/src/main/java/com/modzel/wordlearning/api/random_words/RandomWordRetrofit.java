@@ -6,17 +6,13 @@ import java.io.IOException;
 import java.util.List;
 
 import retrofit2.Call;
-import retrofit2.Retrofit;
 
 public class RandomWordRetrofit extends CommonRetrofit {
-    private static final String RANDOM_WORD_API_URL = "https://random-word-api.herokuapp.com/";
+    private final RandomWordService service =
+            createRetrofit("https://random-word-api.herokuapp.com/")
+                    .create(RandomWordService.class);
 
-    private static Retrofit getInstance() {
-        return CommonRetrofit.getInstance(RANDOM_WORD_API_URL);
-    }
-
-    public static List<String> getRandomWords(int count) {
-        RandomWordService service = getInstance().create(RandomWordService.class);
+    public List<String> getRandomWords(int count) {
         Call<List<String>> apiCall = service.getWords(count);
         try {
             return apiCall.execute().body(); // Download synchronously.

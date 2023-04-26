@@ -15,11 +15,11 @@ public class CommonRetrofit {
         httpClient = new OkHttpClient.Builder()
                 .addInterceptor(interceptor)
                 .connectTimeout(15, TimeUnit.SECONDS)
-                .readTimeout(15,TimeUnit.SECONDS)
+                .readTimeout(15, TimeUnit.SECONDS)
                 .build();
     }
 
-    protected static Retrofit getInstance(String apiBaseUrl) {
+    protected Retrofit createRetrofit(String apiBaseUrl) {
         return new Retrofit.Builder()
                 .baseUrl(apiBaseUrl)
                 .addConverterFactory(GsonConverterFactory.create())

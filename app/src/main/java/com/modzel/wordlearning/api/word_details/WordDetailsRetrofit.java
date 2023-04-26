@@ -7,24 +7,16 @@ import java.util.LinkedList;
 import java.util.List;
 
 import retrofit2.Call;
-import retrofit2.Retrofit;
 
 public class WordDetailsRetrofit extends CommonRetrofit {
-    private static final String WORD_DEFINITION_API_URL = "https://api.dictionaryapi.dev/";
+    private final WordDetailsService service =
+            createRetrofit("https://api.dictionaryapi.dev/")
+                    .create(WordDetailsService.class);
 
-    private static Retrofit getInstance() {
-        return CommonRetrofit.getInstance(WORD_DEFINITION_API_URL);
-    }
-
-    public static WordDetailsService createService() {
-        return getInstance().create(WordDetailsService.class);
-    }
-
-    public static List<Word> getDetailsForEligibleWords(List<String> words) throws IOException {
-        WordDetailsService service = createService();
+    public List<Word> getDetailsForEligibleWords(List<String> words) throws IOException {
         LinkedList<Word> list = new LinkedList<>();
         for (String word : words) {
-            Word detailedWord = getFirstHomonym(service, word);
+            Word detailedWord = getFirstHomonym(word);
             // We managed to download at least 1 eligible homonym of the word.
             if (detailedWord != null)
                 list.addLast(detailedWord);
@@ -32,7 +24,7 @@ public class WordDetailsRetrofit extends CommonRetrofit {
         return list;
     }
 
-    public static Word getFirstHomonym(WordDetailsService service, String word) throws IOException {
+    public Word getFirstHomonym(String word) throws IOException {
         Call<List<Word>> apiCall = service.getHomonyms(word);
         /* For one string, e.g. 'bear', API can return multiple words
         (homonyms). If could not download the word, execute throws
@@ -41,7 +33,7 @@ public class WordDetailsRetrofit extends CommonRetrofit {
         return isWordEligible(homonyms) ? homonyms.get(0) : null;
     }
 
-    private static boolean isWordEligible(List<Word> homonyms) {
+    private boolean isWordEligible(List<Word> homonyms) {
         // Word was not downloaded or no its homonym exists in the dictionary.
         if (homonyms == null || homonyms.size() < 1)
             return false;
@@ -74,7 +66,7 @@ public class WordDetailsRetrofit extends CommonRetrofit {
         return true;
     }
 
-    private static boolean isNullOrEmpty(String string) {
+    private boolean isNullOrEmpty(String string) {
         return string == null || string.isEmpty();
     }
 }
