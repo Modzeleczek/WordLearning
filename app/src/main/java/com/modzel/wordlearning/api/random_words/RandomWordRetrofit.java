@@ -8,6 +8,8 @@ import java.util.List;
 import retrofit2.Call;
 
 public class RandomWordRetrofit extends CommonRetrofit {
+    // The API can return max 500 random words.
+    public static final int MAX_WORDS = 500;
     private final RandomWordService service =
             createRetrofit("https://random-word-api.vercel.app")
                     .create(RandomWordService.class);

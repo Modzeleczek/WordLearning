@@ -22,7 +22,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DownloadActivity extends ResultingActivity {
-    private static final int DOWNLOADED_WORDS = 50;
+    private static final int MAX_NEW_WORDS = 20;
     private AtomicBoolean canceled;
 
     @Override
@@ -36,7 +36,7 @@ public class DownloadActivity extends ResultingActivity {
         progressBar.getProgressDrawable().setColorFilter(getColor(R.color.progress_bar_color),
                 PorterDuff.Mode.SRC_IN); */
         progressBar.setMin(0);
-        progressBar.setMax(DOWNLOADED_WORDS);
+        progressBar.setMax(MAX_NEW_WORDS);
         progressBar.setProgress(0);
 
         canceled = new AtomicBoolean(false);
@@ -72,7 +72,8 @@ public class DownloadActivity extends ResultingActivity {
         @Override
         public void run() { //Background work here
             RandomWordRetrofit randomRF = new RandomWordRetrofit();
-            List<String> words = randomRF.getRandomWords(DOWNLOADED_WORDS);
+            List<String> words = randomRF.getRandomWords(
+                    RandomWordRetrofit.MAX_WORDS);
             // Error occurred while downloading random words.
             if (words == null) {
                 if (!canceled.get()) finishWithError(R.string.random_words_download_failure);
@@ -84,23 +85,26 @@ public class DownloadActivity extends ResultingActivity {
             for (String word : words) {
                 if (canceled.get()) return;
                 try {
-                    Word detailedWord = detailsRF.getFirstHomonym(word);
+                    Word detailedWord = detailsRF.getFirstEligibleHomonym(word);
                     /* If the word does not satisfy application's conditions,
                     skip it. */
-                    if (detailedWord != null)
-                        detailedWords.addLast(detailedWord);
+                    if (detailedWord == null)
+                        continue;
+                    detailedWords.addLast(detailedWord);
+                    // Download at most MAX_NEW_WORDS words.
+                    if (detailedWords.size() >= MAX_NEW_WORDS)
+                        break;
                     // If the word could not be downloaded, skip it.
                 } catch (IOException ignored) {}
                 uiHandler.post(() -> progressBar.incrementProgressBy(1)); //UI Thread work here
             }
 
-            // if (detailedWords.size() < DOWNLOADED_WORDS / 4) {
             if (detailedWords.isEmpty()) {
                 if (!canceled.get()) finishWithError(R.string.word_details_download_failure);
                 return;
             }
             if (canceled.get()) return;
-            replaceInDatabase(detailedWords);
+            DownloadActivity.this.replaceInDatabase(detailedWords);
             finishWithSuccess(R.string.new_words_download_success);
         }
     }
@@ -111,10 +115,10 @@ public class DownloadActivity extends ResultingActivity {
         repo.deleteAllWords();
         for (Word dw : detailedWords) {
             String word = dw.getWord(); // Save the word's content.
-            Meaning m = dw.getMeanings().get(0); // Take only the first meaning.
+            Meaning m = dw.getMeanings().get(0); // Take the only meaning.
             // Save part of speech name.
             String partOfSpeech = m.getPartOfSpeech();
-            // Take only the first definition.
+            // Take the only definition.
             Definition d = m.getDefinitions().get(0);
             String definition = d.getDefinition(); // Save the definition.
             /* Save an example of the selected definition or null if no
@@ -124,9 +128,8 @@ public class DownloadActivity extends ResultingActivity {
             long insertedId = repo.insert(new com.modzel.wordlearning.database.entity.Word(
                     word, partOfSpeech, definition, example));
             repo.incrementStatistic(WordLearning.DOWNLOADED_WORDS);
-            for (String synonym : synonyms) {
+            for (String synonym : synonyms)
                 repo.insertSynonymForWord(insertedId, new Synonym(synonym));
-            }
         }
     }
 }
