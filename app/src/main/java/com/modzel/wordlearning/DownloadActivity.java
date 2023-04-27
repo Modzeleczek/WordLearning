@@ -22,7 +22,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DownloadActivity extends ResultingActivity {
-    private static final int MAX_NEW_WORDS = 20;
+    private static final int MAX_NEW_WORDS_WITH_SYNONYMS = 10;
+    private static final int MAX_NEW_WORDS_WITHOUT_SYNONYMS = 30;
     private AtomicBoolean canceled;
 
     @Override
@@ -36,7 +37,8 @@ public class DownloadActivity extends ResultingActivity {
         progressBar.getProgressDrawable().setColorFilter(getColor(R.color.progress_bar_color),
                 PorterDuff.Mode.SRC_IN); */
         progressBar.setMin(0);
-        progressBar.setMax(MAX_NEW_WORDS);
+        progressBar.setMax(MAX_NEW_WORDS_WITH_SYNONYMS +
+                MAX_NEW_WORDS_WITHOUT_SYNONYMS);
         progressBar.setProgress(0);
 
         canceled = new AtomicBoolean(false);
@@ -81,6 +83,7 @@ public class DownloadActivity extends ResultingActivity {
             }
 
             WordDetailsRetrofit detailsRF = new WordDetailsRetrofit();
+            int withSynonyms = 0;
             LinkedList<Word> detailedWords = new LinkedList<>();
             for (String word : words) {
                 if (canceled.get()) return;
@@ -90,13 +93,25 @@ public class DownloadActivity extends ResultingActivity {
                     skip it. */
                     if (detailedWord == null)
                         continue;
+                    List<String> synonyms = detailedWord.getMeanings().get(0)
+                            .getDefinitions().get(0).getSynonyms();
+                    if (synonyms != null) { // The word has synonyms.
+                        if (withSynonyms >= MAX_NEW_WORDS_WITH_SYNONYMS)
+                            continue; // Skip excessive words with synonyms.
+                        ++withSynonyms;
+                    } else { // The word has no synonyms.
+                        if (detailedWords.size() - withSynonyms >=
+                                MAX_NEW_WORDS_WITHOUT_SYNONYMS)
+                            continue; // Skip excessive words without synonyms.
+                    }
                     detailedWords.addLast(detailedWord);
-                    // Download at most MAX_NEW_WORDS words.
-                    if (detailedWords.size() >= MAX_NEW_WORDS)
+                    uiHandler.post(() -> progressBar.incrementProgressBy(1)); //UI Thread work here
+                    // Break if there are enough words.
+                    if (detailedWords.size() >= MAX_NEW_WORDS_WITH_SYNONYMS +
+                            MAX_NEW_WORDS_WITHOUT_SYNONYMS)
                         break;
                     // If the word could not be downloaded, skip it.
                 } catch (IOException ignored) {}
-                uiHandler.post(() -> progressBar.incrementProgressBy(1)); //UI Thread work here
             }
 
             if (detailedWords.isEmpty()) {
@@ -128,6 +143,8 @@ public class DownloadActivity extends ResultingActivity {
             long insertedId = repo.insert(new com.modzel.wordlearning.database.entity.Word(
                     word, partOfSpeech, definition, example));
             repo.incrementStatistic(WordLearning.DOWNLOADED_WORDS);
+            if (synonyms == null) // The word has no synonyms.
+                continue;
             for (String synonym : synonyms)
                 repo.insertSynonymForWord(insertedId, new Synonym(synonym));
         }

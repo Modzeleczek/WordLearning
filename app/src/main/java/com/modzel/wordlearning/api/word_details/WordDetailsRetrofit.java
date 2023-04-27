@@ -87,9 +87,10 @@ public class WordDetailsRetrofit extends CommonRetrofit {
             /* There may be no example of the the selected definition (null
             then). */
             List<String> synonyms = definition.getSynonyms();
-            // Word must have synonyms.
+            // The word may have no synonyms.
             if (synonyms == null || synonyms.size() < 1)
-                continue;
+                // Make sure that definition.synonyms is null.
+                definition.setSynonyms(null);
             return definition;
         }
         // Meaning has no eligible definition.
