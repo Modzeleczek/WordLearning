@@ -9,7 +9,7 @@ import retrofit2.Call;
 
 public class RandomWordRetrofit extends CommonRetrofit {
     private final RandomWordService service =
-            createRetrofit("https://random-word-api.herokuapp.com/")
+            createRetrofit("https://random-word-api.vercel.app")
                     .create(RandomWordService.class);
 
     public List<String> getRandomWords(int count) {

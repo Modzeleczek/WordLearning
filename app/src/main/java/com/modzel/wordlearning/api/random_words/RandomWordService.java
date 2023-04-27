@@ -7,6 +7,6 @@ import retrofit2.http.GET;
 import retrofit2.http.Query;
 
 public interface RandomWordService {
-    @GET("/word")
-    Call<List<String>> getWords(@Query("number") int number);
+    @GET("/api")
+    Call<List<String>> getWords(@Query("words") int words);
 }
