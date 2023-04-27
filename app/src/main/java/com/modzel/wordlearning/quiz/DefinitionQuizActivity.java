@@ -80,7 +80,8 @@ public class DefinitionQuizActivity extends QuizActivity {
     }
 
     private List<Word> generateAnswers(Word question, List<Word> from) {
-        from.remove(question);
+        String questionContent = question.getWord();
+        from.removeIf((word) -> word.getWord().equals(questionContent));
         List<Word> answers = pickNRandomElements(from, 3, random);
         int correctAnswerIndex = random.nextInt(4);
         answers.add(correctAnswerIndex, question);
